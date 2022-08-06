@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({ limit: '30mb', extended: true }))
 app.use(cors());
 
 app.get('/' , (req, res)=>{
-  console.log("Welcome to dots api !")
+  res.send("Welcome to dots backend api !")
 })
 
 app.use('/posts', postRoutes); 
