@@ -14,6 +14,8 @@ const postSchema = mongoose.Schema({
         type: Date,
         default: new Date(),
     },
+    longitude: String ,
+    latitude : String ,
 })
 
 var PostMessage = mongoose.model('PostMessage', postSchema);

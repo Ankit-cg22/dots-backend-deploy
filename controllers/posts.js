@@ -13,7 +13,7 @@ export const getPosts = async(req , res)=> {
 
     try {
         
-        const LIMIT = 9 ; // 9 posts per page
+        const LIMIT = 5 ; // 5 posts per page
         const startIndex = (Number(page) - 1) * LIMIT ; // in the query string , page becomes string , to convert it to number we use Number()
         // total number of posts
         const total = await PostMessage.countDocuments({})
@@ -65,6 +65,20 @@ export const fetchPostById = async(req,res) => {
     }
 }
 
+export const fetchPostsByUserId = async(req,res) => {
+
+    const {id} = req.params
+
+    try {
+        const posts = await PostMessage.find({ author : { $in : [ id ] } }).sort({_id : -1})
+        
+        res.status(200).json(posts)
+        
+    } catch (error) {
+        console.log(error.message);
+        res.status(404).json({ message : error })
+    }
+}
 
 
 export const createPost = async(req , res)=> {
