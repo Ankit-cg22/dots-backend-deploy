@@ -10,6 +10,8 @@ import jwt from 'jsonwebtoken'
 //user model 
 import UserModel from '../models/user.js'
 
+import PostMessage from "../models/postMessage.js";
+
 export  const signIn = async (req, res) => {
     // we need email and password  , that comes from frontend
     const {email , password} = req.body ;
@@ -90,3 +92,18 @@ export  const signUp = async (req, res) => {
 
 // test_secret_string is for jwt auth , not for password
 
+export const getUserInfo = async(req,res) => {
+
+    const {id} = req.params
+
+    try {
+        const posts = await PostMessage.find({ author : { $in : [ id ] } }).sort({_id : -1})
+        const user = await UserModel.findById(id)
+
+        res.status(200).json({ user : user ,posts:posts })
+        
+    } catch (error) {
+        console.log(error.message);
+        res.status(404).json({ message : error })
+    }
+}

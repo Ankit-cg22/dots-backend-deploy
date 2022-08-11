@@ -65,22 +65,6 @@ export const fetchPostById = async(req,res) => {
     }
 }
 
-export const fetchPostsByUserId = async(req,res) => {
-
-    const {id} = req.params
-
-    try {
-        const posts = await PostMessage.find({ author : { $in : [ id ] } }).sort({_id : -1})
-        
-        res.status(200).json(posts)
-        
-    } catch (error) {
-        console.log(error.message);
-        res.status(404).json({ message : error })
-    }
-}
-
-
 export const createPost = async(req , res)=> {
 
     const post = req.body;
