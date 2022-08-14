@@ -21,7 +21,7 @@ export  const signIn = async (req, res) => {
         const existingUser = await UserModel.findOne({ email });
 
         // check if the user exists or not
-        if( !existingUser) return res.status(404).json({message : "User does not exist !! 😕"})
+        if( !existingUser) return res.status(404).json({message : "User does not exist !!"})
 
         //check password 
 

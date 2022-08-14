@@ -9,10 +9,22 @@ const postSchema = mongoose.Schema({
     tags: [String],
     selectedFile: String,
     likes: { type: [String], default: [] },
-    comments: { type: [String], default: [] },
+    comments: { 
+        type: [{
+            user : {
+                type : mongoose.SchemaTypes.ObjectId,
+                ref : "UserModel" ,
+            },
+            comment : String ,
+            createdAt: {
+                type: Date,
+                default: Date.now
+            },
+        }]
+        , default: [] },
     createdAt: {
         type: Date,
-        default: new Date(),
+        default: Date.now ,
     },
     longitude: String ,
     latitude : String ,

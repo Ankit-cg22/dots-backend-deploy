@@ -19,7 +19,7 @@ export const getPosts = async(req , res)=> {
         const total = await PostMessage.countDocuments({})
         
         //retrive all the posts ,present in the data base
-        const posts = await PostMessage.find().sort({_id : -1}).limit(LIMIT).skip(startIndex); // sort by id in reverse order : newest first 
+        const posts = await PostMessage.find().sort({_id : -1}).limit(LIMIT).skip(startIndex) // sort by id in reverse order : newest first 
                                 // model
 
         res.json({data :posts , currentPageNumber : Number(page) , totalNumberOfPages : Math.ceil(total/LIMIT)});        
@@ -56,11 +56,16 @@ export const fetchPostById = async(req,res) => {
     const {id} = req.params
 
     try {
-        const post = await PostMessage.findById(id)
-
+        const post = await PostMessage.findById(id).populate({
+            path:"comments",
+            populate:{
+                path:"user",
+            }
+        })
         res.status(200).json(post)
         
     } catch (error) {
+        console.log(error.message)
         res.status(404).json({ message : error })
     }
 }
@@ -156,17 +161,22 @@ export const deletePost = async(req, res) => {
 }
 
 export const postComment=  async(req, res) => {
-    const { id } =req.params;
-    const { commentString } = req.body;
+    const { id } = req.params;
+    const { commentObject } = req.body;
 
     // fetch the post
     const post = await PostMessage.findById(id)
 
     // add new data
-    post.comments.push(commentString)
+    post.comments.push({user:commentObject.user_id , comment : commentObject.comment})
 
     // update the data base with the new data
-    const updatedPost = await PostMessage.findByIdAndUpdate(id , post , { new : true});
+    const updatedPost = await PostMessage.findByIdAndUpdate(id , post , { new : true}).populate({
+        path:"comments",
+        populate:{
+            path:"user",
+        }
+    })
 
     res.json(updatedPost)
 
