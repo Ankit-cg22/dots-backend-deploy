@@ -4,6 +4,7 @@
 
 import express from 'express';
 import mongoose from 'mongoose';
+import { getOrSetCache } from '../utils/redisCache.js';
 
 import PostMessage from '../models/postMessage.js'
 
@@ -15,12 +16,16 @@ export const getPosts = async(req , res)=> {
         
         const LIMIT = 5 ; // 5 posts per page
         const startIndex = (Number(page) - 1) * LIMIT ; // in the query string , page becomes string , to convert it to number we use Number()
-        // total number of posts
+        // total number of posts    
         const total = await PostMessage.countDocuments({})
         
         //retrive all the posts ,present in the data base
-        const posts = await PostMessage.find().sort({_id : -1}).limit(LIMIT).skip(startIndex) // sort by id in reverse order : newest first 
+        // const posts = await PostMessage.find().sort({_id : -1}).limit(LIMIT).skip(startIndex) // sort by id in reverse order : newest first 
                                 // model
+        const posts = await getOrSetCache(`posts?startIndex=${startIndex}`,60 , async()=>{
+            const data =  await PostMessage.find().sort({_id : -1}).limit(LIMIT).skip(startIndex)
+            return data
+        })
 
         res.json({data :posts , currentPageNumber : Number(page) , totalNumberOfPages : Math.ceil(total/LIMIT)});        
         // we respond with the array of posts
@@ -40,13 +45,19 @@ export const getPosts = async(req , res)=> {
 export const getPostsBySearch = async(req,res) => {
 
     const {search , tag} = req.query
-
     try {
         // const title = new RegExp(search, "i");
 
-        const posts = await PostMessage.find({ $or: [ { title : search }, { tags: { $in: tag.split(',') } } ]});
+        // const posts = await PostMessage.find({ $or: [ { title : search }, { tags: { $in: tag.split(',') } } ]});
+
+        const posts = await getOrSetCache(`posts?title=${search}?tag=${tag}` ,3600 , async()=>{
+            const data =  await PostMessage.find({ $or: [ { title : search }, { tags: { $in: tag.split(',') } } ]});
+            return data
+        })
+        
         res.json({ data : posts })
     } catch (error) {
+        // console.log(error)
         res.status(404).json({ message : error })
     }
 }
@@ -56,11 +67,20 @@ export const fetchPostById = async(req,res) => {
     const {id} = req.params
 
     try {
-        const post = await PostMessage.findById(id).populate({
-            path:"comments",
-            populate:{
-                path:"user",
-            }
+        // const post = await PostMessage.findById(id).populate({
+        //     path:"comments",
+        //     populate:{
+        //         path:"user",
+        //     }
+        // })
+        const post = await getOrSetCache(`post?id=${id}` ,3600, async()=>{
+            const data =  await PostMessage.findById(id).populate({
+                path:"comments",
+                populate:{
+                    path:"user",
+                }     
+            })       
+            return data
         })
         res.status(200).json(post)
         
@@ -115,7 +135,7 @@ export const updateLikes = async(req  , res) => {
     const { id } = req.params;
 
     // check if user is authenticated
-    if( !req.userId)return rese.json({message : "User is not authenticated!!"});
+    if( !req.userId)return res.json({message : "User is not authenticated!!"});
 
     // check with mongoose if any post with that id exists or not
     if( !(mongoose.Types.ObjectId.isValid(id)) ) return res.status(404).send(`No post with id : ${id}`);
@@ -166,7 +186,6 @@ export const postComment=  async(req, res) => {
 
     // fetch the post
     const post = await PostMessage.findById(id)
-
     // add new data
     post.comments.push({user:commentObject.user_id , comment : commentObject.comment})
 

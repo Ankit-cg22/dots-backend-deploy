@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv'
-
+import { getOrSetCache } from './utils/redisCache.js';
 import postRoutes from './routes/posts.js';
 import userRoutes from './routes/user.js'
 

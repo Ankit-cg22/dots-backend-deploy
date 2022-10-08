@@ -1,5 +1,5 @@
 import  express  from "express";
-
+import { getOrSetCache } from "../utils/redisCache.js";
 // for hashing the passwords
 import bcrypt from 'bcryptjs'
 
@@ -97,8 +97,15 @@ export const getUserInfo = async(req,res) => {
     const {id} = req.params
 
     try {
-        const posts = await PostMessage.find({ author : { $in : [ id ] } }).sort({_id : -1})
-        const user = await UserModel.findById(id)
+        // const user = await UserModel.findById(id)
+        const posts = await getOrSetCache(`posts?author=${id}` ,60, async()=>{
+            const data =  await PostMessage.find({ author : { $in : [ id ] } }).sort({_id : -1})
+            return data
+        })
+        const user = await getOrSetCache(`user?id=${id}`,60 , async()=>{
+            const data =  await UserModel.findById(id)
+            return data
+        })
 
         res.status(200).json({ user : user ,posts:posts })
         
