@@ -22,7 +22,7 @@ export const getPosts = async(req , res)=> {
         //retrive all the posts ,present in the data base
         // const posts = await PostMessage.find().sort({_id : -1}).limit(LIMIT).skip(startIndex) // sort by id in reverse order : newest first 
                                 // model
-        const posts = await getOrSetCache(`posts?startIndex=${startIndex}`,60 , async()=>{
+        const posts = await getOrSetCache(`posts?startIndex=${startIndex}` , async()=>{
             const data =  await PostMessage.find().sort({_id : -1}).limit(LIMIT).skip(startIndex)
             return data
         })
@@ -50,7 +50,7 @@ export const getPostsBySearch = async(req,res) => {
 
         // const posts = await PostMessage.find({ $or: [ { title : search }, { tags: { $in: tag.split(',') } } ]});
 
-        const posts = await getOrSetCache(`posts?title=${search}?tag=${tag}` ,3600 , async()=>{
+        const posts = await getOrSetCache(`posts?title=${search}?tag=${tag}`  , async()=>{
             const data =  await PostMessage.find({ $or: [ { title : search }, { tags: { $in: tag.split(',') } } ]});
             return data
         })
@@ -73,7 +73,7 @@ export const fetchPostById = async(req,res) => {
         //         path:"user",
         //     }
         // })
-        const post = await getOrSetCache(`post?id=${id}` ,3600, async()=>{
+        const post = await getOrSetCache(`post?id=${id}` , async()=>{
             const data =  await PostMessage.findById(id).populate({
                 path:"comments",
                 populate:{

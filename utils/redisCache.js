@@ -11,9 +11,9 @@ const redisClient = Redis.createClient({
 
 redisClient.on('connect' , () => console.log("connected to redis !"))
 redisClient.on('error' , (err) => console.log(err))
-// const DEFAULT_EXPIRY = 3600;
+const DEFAULT_EXPIRY = 60;
 
-export function getOrSetCache(key , expiry , cb){
+export function getOrSetCache(key  , cb){
             // console.log(1)
     return new Promise((resolve , reject) => {
         redisClient.get(key , async (error,data) => {
@@ -29,7 +29,7 @@ export function getOrSetCache(key , expiry , cb){
 
 
             const newData = await cb()
-            redisClient.setex(key , expiry , JSON.stringify(newData))
+            redisClient.setex(key , DEFAULT_EXPIRY , JSON.stringify(newData))
             resolve(newData)
         })
     })

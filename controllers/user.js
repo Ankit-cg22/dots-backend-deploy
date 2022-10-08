@@ -98,11 +98,11 @@ export const getUserInfo = async(req,res) => {
 
     try {
         // const user = await UserModel.findById(id)
-        const posts = await getOrSetCache(`posts?author=${id}` ,60, async()=>{
+        const posts = await getOrSetCache(`posts?author=${id}` , async()=>{
             const data =  await PostMessage.find({ author : { $in : [ id ] } }).sort({_id : -1})
             return data
         })
-        const user = await getOrSetCache(`user?id=${id}`,60 , async()=>{
+        const user = await getOrSetCache(`user?id=${id}` , async()=>{
             const data =  await UserModel.findById(id)
             return data
         })
